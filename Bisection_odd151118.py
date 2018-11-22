@@ -145,10 +145,3 @@ if __name__ == '__main__':
     #List of roots
     rootList = all_roots(ranging, fx, fx_tag, iteration, epsilon)
     print(set(rootList))
-
-
-
-
-
-
-
