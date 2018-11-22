@@ -1,22 +1,16 @@
 from sympy import *
 import scipy as sp
 import numpy as np
+
 import matplotlib.pylab as plt
 
-def f(list):
+def f(symbolic_fuction):
     '''
-    :param list: list of coefficients
-    :type list: list []
-    :return: polynomial function as lambda
-    '''
-    return lambda x : list[0]*x**6 + list[1]*x**5 + list[2]*x**4 + list[3]*x**3 + list[4]*x**2 + list[5]*x + list[6]
 
-def g(list):
+    :param symbolic_fuction: mathematical expression
+    :return: mathematical function
     '''
-    :param list: list of coefficients
-    :return: polynomial function
-    '''
-    return list[0]*x**6 + list[1]*x**5 + list[2]*x**4 + list[3]*x**3 + list[4]*x**2 + list[5]*x + list[6]
+    return lambdify(x, symbolic_fuction, 'numpy')
 
 def bisection(a, b, iteration, function, epsilon):
     '''
@@ -61,24 +55,17 @@ def exponentIndex(list):
         if(not(list[i] == 0)):
                 return 6 - i
 
-def derivative(func, x):
+def derivative(symbolic_fuction):
     '''
-    :param func: polynomial function
-    :type func: function
-    :param x: input of diff function
-    :type x: symbol
-    :return: derivative of func function
+    :param func: mathematical expression
+    :return: derivative of symbolic function as a function
     '''
+    f_tag = diff(symbolic_fuction)
+    return lambdify(x, f_tag, 'numpy')
 
-    func_tag = diff(func, x, 1)
-    return func_tag
-    #lambdify(x, func_tag, 'numpy')
-
-
-def roots(ranging, expo, function, iteration, epsilon):
+def roots(ranging, function, iteration, epsilon):
     '''
     :param ranging: coordinates of seagmants a,b
-    :param expo: highest exponent of function
     :param function: Polynomial function
     :param iteration: number of iteration
     :param epsilon:exceptable exception
@@ -99,18 +86,49 @@ def roots(ranging, expo, function, iteration, epsilon):
             else:
                 count = count + 1
                 rootList.append(tmp)
-        if (count == expo):
-            return rootList
         j = j + 1
 
     return rootList
 
+def all_roots(ranging, fx, fx_tag, iteration, epsilon):
+    fx_list = []
+    fx_tag_list = []
+    root_list = []
+    merged_list = []
+    fx_list = roots(ranging, fx, iteration, epsilon)
+    fx_tag_list = roots(ranging, fx_tag, iteration, epsilon)
+    almostE = 0.001
+
+    for i in fx_tag_list:
+        if(fx(i) <= almostE and fx(i) >= -almostE):
+            root_list.append(i)
+
+    for i in root_list:
+        for j in fx_list:
+            if (j <=  i + almostE and j >= i - almostE):
+                continue
+            else:
+                 merged_list.append(j)
+
+    for i in merged_list:
+        fx_list += i
+    return fx_list
+
+
+
 if __name__ == '__main__':
 
+    x = Symbol('x')
     epsilon = 0.001
     iteration = 100
     Start_Domain = -10
     interval_jump = 0.5
+    fx = cos(x)
+
+
+    tmp1 = f(fx)
+    fx_tag = derivative(fx)
+    fx = tmp1
 
     count = 0
     rootList = []
@@ -119,51 +137,18 @@ if __name__ == '__main__':
     #Definition of domain
     End_Domain = -Start_Domain
     parameter = Start_Domain
-    tmp = (-2 * Start_Domain) / interval_jump #Do you not understand? ok, ask Alon!
+    tmp = (-2 * Start_Domain) / interval_jump
     for i in range(int(tmp)):
         ranging.append(parameter)
         parameter += interval_jump
 
-    #Function coefficients input from the user
-    print("Enter the polinomyal parameters from x^6 to x^0, 7 parameters:")
-    fxParameters = [float(z) for z in input().split()]
-    expo = exponentIndex(fxParameters)
-    function = f(fxParameters)
-
     #List of roots
-    rootList = roots(ranging, expo, function, iteration, epsilon)
+    rootList = all_roots(ranging, fx, fx_tag, iteration, epsilon)
     print(set(rootList))
 
-    x = Symbol('x')
-    function = g(fxParameters)
-
-    z = derivative(function, x)
-    function = z
-    b = derivative(function, x).as_content_primitive(True)
-    c =lambdify(x,b[1], 'numpy')
-    print(c(1))
 
 
-    try:
-        if type(b) == str:
-            print("it is")
-        else:
-            print("b is not a string, b is a: ",type(b))
-    except: TypeError:\
-        print("Error")
 
 
-    #eval("b")(1)
-    #lambdify(x, b, 'numpy')
-    print(b)
-    '''
-    t = bisection(-1.5, -1, iteration, function, epsilon)
-    print(t)
-    
-    t = np.arange(Start_Domain, End_Domain, 0.01)
-    plt.plot(ranging, function,lw = 2)
-    #plt.axis([Start_Domain,End_Domain,-20,20])
-    plt.show()
-    '''
 
 
